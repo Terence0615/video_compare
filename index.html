@@ -235,55 +235,20 @@
             const card = document.createElement('div');
             card.className = 'video-card';
             
+            // 示例使用 YouTube 嵌入 (假设视频数据中有 YouTube ID)
             card.innerHTML = `
                 <div class="prompt-section">
                     <div class="prompt-text">${video.prompt}</div>
                 </div>
                 <div class="video-container">
                     <div class="video-title">通义视频</div>
-                    <div class="video-placeholder">点击加载视频</div>
-                    <video data-src="${video.tongyi_url}" preload="none" muted></video>
+                    <iframe src="https://www.youtube.com/embed/${video.tongyi_youtube_id}" frameborder="0" allowfullscreen></iframe>
                 </div>
                 <div class="video-container">
                     <div class="video-title">Wavespeed</div>
-                    <div class="video-placeholder">点击加载视频</div>
-                    <video data-src="${video.wavespeed_url}" preload="none" muted></video>
+                    <iframe src="https://www.youtube.com/embed/${video.wavespeed_youtube_id}" frameborder="0" allowfullscreen></iframe>
                 </div>
             `;
-
-            // 添加视频事件处理
-            const placeholders = card.querySelectorAll('.video-placeholder');
-            const videos = card.querySelectorAll('video');
-            
-            // 同时存储视频元素用于延迟加载
-            videos.forEach(video => {
-                videoElements.push(video);
-            });
-            
-            // 为每个视频和占位符添加事件
-            for (let i = 0; i < videos.length; i++) {
-                const video = videos[i];
-                const placeholder = placeholders[i];
-                
-                // 点击占位符加载视频
-                placeholder.addEventListener('click', () => {
-                    if (!video.src && video.dataset.src) {
-                        video.src = video.dataset.src;
-                        video.load();
-                        placeholder.style.display = 'none';
-                    }
-                });
-                
-                // 视频事件
-                video.addEventListener('mouseenter', () => {
-                    if (video.src) video.play();
-                });
-                video.addEventListener('mouseleave', () => {
-                    if (video.src) video.pause();
-                });
-                video.addEventListener('click', () => openModal(video));
-            }
-
             return card;
         }
 
