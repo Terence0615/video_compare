@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>静态测试页面</title>
+    <style>
+        body { text-align: center; padding: 50px; font-family: sans-serif; }
+        .test-card { max-width: 500px; margin: 0 auto; padding: 20px; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1>GitHub Pages 测试页面</h1>
+    <div class="test-card">
+        <p>如果您看到此页面，说明基本静态页面可以正常加载。</p>
+        <p>接下来请检查 videos.json 文件和视频文件是否正确上传。</p>
+        <p id="debug"></p>
+    </div>
+    
+    <script>
+        document.getElementById('debug').textContent = 
+            '页面URL: ' + window.location.href + '\n' +
+            '主机名: ' + window.location.hostname;
+            
+        // 尝试加载 videos.json 文件
+        fetch('videos.json')
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('debug').textContent += '\n✅ videos.json 文件存在';
+                    return response.json();
+                } else {
+                    document.getElementById('debug').textContent += '\n❌ 无法加载 videos.json 文件';
+                    throw new Error('无法加载 videos.json');
+                }
+            })
+            .then(data => {
+                document.getElementById('debug').textContent += '\n✅ 成功解析 JSON 数据';
+                if (data.videos && data.videos.length > 0) {
+                    document.getElementById('debug').textContent += 
+                        '\n✅ 找到 ' + data.videos.length + ' 个视频数据';
+                }
+            })
+            .catch(error => {
+                document.getElementById('debug').textContent += '\n❌ 错误: ' + error.message;
+            });
+    </script>
+</body>
+</html> 
