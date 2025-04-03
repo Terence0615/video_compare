@@ -4,6 +4,7 @@ import pandas as pd
 from math import ceil
 import traceback
 import re
+import json
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 
@@ -152,5 +153,37 @@ def debug_info():
     }
     return jsonify(info)
 
+@app.route('/export_videos_json')
+def export_videos_json():
+    """导出所有视频数据为JSON文件"""
+    try:
+        all_videos = get_video_data()
+        return jsonify({
+            'videos': all_videos,
+            'total_pages': ceil(len(all_videos) / VIDEOS_PER_PAGE) if all_videos else 1
+        })
+    except Exception as e:
+        print(f"导出视频JSON时出错: {str(e)}")
+        traceback.print_exc()
+        return jsonify({'error': str(e), 'videos': [], 'total_pages': 1}), 500
+
+def generate_videos_json():
+    """生成 videos.json 文件"""
+    try:
+        all_videos = get_video_data()
+        json_data = {
+            'videos': all_videos,
+            'total_pages': ceil(len(all_videos) / VIDEOS_PER_PAGE) if all_videos else 1
+        }
+        
+        with open('videos.json', 'w', encoding='utf-8') as f:
+            json.dump(json_data, f, ensure_ascii=False, indent=2)
+        
+        print("成功创建 videos.json 文件！")
+    except Exception as e:
+        print(f"创建 videos.json 时出错: {str(e)}")
+        traceback.print_exc()
+
 if __name__ == '__main__':
+    generate_videos_json()  # 生成 JSON 文件
     app.run(debug=True, port=5001) 
