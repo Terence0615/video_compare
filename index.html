@@ -299,15 +299,42 @@
             document.getElementById('loading').style.display = 'block';
             
             try {
-                // 添加时间戳避免缓存
-                const timestamp = new Date().getTime();
-                const response = await fetch(`/api/videos/${page}?t=${timestamp}`);
+                // 检测是否为 GitHub Pages 环境（通常通过 URL 判断）
+                const isGitHubPages = window.location.hostname.includes('github.io');
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP错误！状态: ${response.status}`);
+                let data;
+                if (isGitHubPages) {
+                    // GitHub Pages 环境下，从静态 JSON 文件加载
+                    const timestamp = new Date().getTime();
+                    const response = await fetch(`videos.json?t=${timestamp}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP错误！状态: ${response.status}`);
+                    }
+                    
+                    const allData = await response.json();
+                    
+                    // 手动分页
+                    const videosPerPage = 12;
+                    const startIdx = (page - 1) * videosPerPage;
+                    const endIdx = startIdx + videosPerPage;
+                    
+                    data = {
+                        videos: allData.videos.slice(startIdx, endIdx),
+                        total_pages: Math.ceil(allData.videos.length / videosPerPage)
+                    };
+                } else {
+                    // 本地环境，使用原来的 API
+                    const timestamp = new Date().getTime();
+                    const response = await fetch(`/api/videos/${page}?t=${timestamp}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP错误！状态: ${response.status}`);
+                    }
+                    
+                    data = await response.json();
                 }
                 
-                const data = await response.json();
                 console.log("API返回数据:", data); // 调试输出
                 
                 const videoGrid = document.getElementById('videoGrid');
@@ -315,6 +342,12 @@
                 
                 if (data.videos && data.videos.length > 0) {
                     data.videos.forEach(video => {
+                        // 在 GitHub Pages 环境下修正视频 URL
+                        if (isGitHubPages) {
+                            // 调整为 GitHub Pages 上的正确路径
+                            video.tongyi_url = video.tongyi_url.replace(/^\/results\//, '');
+                            video.wavespeed_url = video.wavespeed_url.replace(/^\/results\//, '');
+                        }
                         videoGrid.appendChild(createVideoCard(video));
                     });
                     
