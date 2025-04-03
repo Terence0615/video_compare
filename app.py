@@ -5,7 +5,7 @@ from math import ceil
 import traceback
 import re
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='.', static_url_path='')
 
 # 每页显示的视频数量
 VIDEOS_PER_PAGE = 12
@@ -116,7 +116,8 @@ def get_video_data():
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # 直接发送根目录下的index.html文件，而不是使用render_template
+    return send_from_directory('.', 'index.html')
 
 @app.route('/api/videos/<int:page>')
 def get_videos(page):
