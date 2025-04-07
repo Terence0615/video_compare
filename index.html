@@ -604,10 +604,12 @@
         
         // 渲染文生视频单元格函数示例修改
         function renderT2VCell(item, model, videoCell) {
+            // 始终优先使用OSS URL
             const videoUrl = item[model + '_oss_url'] || '';
             const elapsedTime = item[model + '_elapsed_time'];
             const hasError = item[model + '_error'] !== undefined;
             
+            // 如果有oss_url且没有错误，就显示视频
             if (videoUrl && !hasError) {
                 const videoContainer = document.createElement('div');
                 videoContainer.className = 'video-container';
@@ -623,7 +625,10 @@
                 // 添加鼠标悬停事件播放/暂停视频
                 videoContainer.onmouseenter = () => {
                     if (videoEl.paused) {
-                        videoEl.play().catch(e => console.error('视频播放失败', e));
+                        videoEl.play().catch(e => {
+                            console.error('视频播放失败', e);
+                            console.log('视频URL:', videoUrl);
+                        });
                     }
                 };
                 
@@ -658,9 +663,16 @@
                 const errorText = document.createElement('div');
                 errorText.className = 'error-message';
                 
-                // 使用简化的错误消息
-                errorText.textContent = hasError ? simplifyErrorMessage(item[model + '_error']) : '无视频数据';
+                let errorMessage = '无视频数据';
+                if (hasError) {
+                    errorMessage = simplifyErrorMessage(item[model + '_error']);
+                } else if (!videoUrl && item[model]) {
+                    // 如果没有OSS URL但有本地路径，提示需要OSS URL
+                    errorMessage = '需要OSS链接';
+                    console.warn(`${model}缺少OSS URL, 本地路径: ${item[model]}`);
+                }
                 
+                errorText.textContent = errorMessage;
                 errorContainer.appendChild(errorText);
                 videoCell.appendChild(errorContainer);
             }
@@ -668,10 +680,12 @@
 
         // 渲染图生视频单元格
         function renderI2VCell(item, model, videoCell) {
+            // 始终优先使用OSS URL
             const videoUrl = item[model + '_oss_url'] || '';
             const elapsedTime = item[model + '_elapsed_time'];
             const hasError = item[model + '_error'] !== undefined;
             
+            // 如果有oss_url且没有错误，就显示视频
             if (videoUrl && !hasError) {
                 const videoContainer = document.createElement('div');
                 videoContainer.className = 'video-container';
@@ -687,7 +701,10 @@
                 // 添加鼠标悬停事件播放/暂停视频
                 videoContainer.onmouseenter = () => {
                     if (videoEl.paused) {
-                        videoEl.play().catch(e => console.error('视频播放失败', e));
+                        videoEl.play().catch(e => {
+                            console.error('视频播放失败', e);
+                            console.log('视频URL:', videoUrl);
+                        });
                     }
                 };
                 
@@ -722,9 +739,16 @@
                 const errorText = document.createElement('div');
                 errorText.className = 'error-message';
                 
-                // 使用简化的错误消息
-                errorText.textContent = hasError ? simplifyErrorMessage(item[model + '_error']) : '无视频数据';
+                let errorMessage = '无视频数据';
+                if (hasError) {
+                    errorMessage = simplifyErrorMessage(item[model + '_error']);
+                } else if (!videoUrl && item[model]) {
+                    // 如果没有OSS URL但有本地路径，提示需要OSS URL
+                    errorMessage = '需要OSS链接';
+                    console.warn(`${model}缺少OSS URL, 本地路径: ${item[model]}`);
+                }
                 
+                errorText.textContent = errorMessage;
                 errorContainer.appendChild(errorText);
                 videoCell.appendChild(errorContainer);
             }
