@@ -666,6 +666,70 @@
             }
         }
 
+        // 渲染图生视频单元格
+        function renderI2VCell(item, model, videoCell) {
+            const videoUrl = item[model + '_oss_url'] || '';
+            const elapsedTime = item[model + '_elapsed_time'];
+            const hasError = item[model + '_error'] !== undefined;
+            
+            if (videoUrl && !hasError) {
+                const videoContainer = document.createElement('div');
+                videoContainer.className = 'video-container';
+                
+                const videoEl = document.createElement('video');
+                videoEl.setAttribute('data-src', videoUrl);
+                videoEl.muted = true;
+                videoEl.loop = true;
+                
+                // 添加点击事件打开全屏模态框
+                videoContainer.onclick = () => openFullscreen(videoUrl);
+                
+                // 添加鼠标悬停事件播放/暂停视频
+                videoContainer.onmouseenter = () => {
+                    if (videoEl.paused) {
+                        videoEl.play().catch(e => console.error('视频播放失败', e));
+                    }
+                };
+                
+                videoContainer.onmouseleave = () => {
+                    if (!videoEl.paused) {
+                        videoEl.pause();
+                    }
+                };
+                
+                // 如果有耗时数据，添加耗时标签
+                if (elapsedTime) {
+                    const timeLabel = document.createElement('div');
+                    timeLabel.className = 'elapsed-time';
+                    timeLabel.textContent = (elapsedTime < 1000) ? 
+                        `耗时: ${elapsedTime.toFixed(1)}秒` : 
+                        `耗时: ${(elapsedTime/60).toFixed(1)}分钟`;
+                    videoContainer.appendChild(timeLabel);
+                }
+                
+                videoContainer.appendChild(videoEl);
+                videoCell.appendChild(videoContainer);
+                
+                // 添加到观察器实现懒加载
+                if ('IntersectionObserver' in window) {
+                    observer.observe(videoContainer);
+                }
+            } else {
+                // 显示错误或占位符
+                const errorContainer = document.createElement('div');
+                errorContainer.className = 'video-placeholder';
+                
+                const errorText = document.createElement('div');
+                errorText.className = 'error-message';
+                
+                // 使用简化的错误消息
+                errorText.textContent = hasError ? simplifyErrorMessage(item[model + '_error']) : '无视频数据';
+                
+                errorContainer.appendChild(errorText);
+                videoCell.appendChild(errorContainer);
+            }
+        }
+
         // 打开全屏视频模态框
         function openFullscreen(videoSrc) {
             const modalVideo = document.getElementById('modalVideo');
